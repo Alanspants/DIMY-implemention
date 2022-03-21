@@ -1,18 +1,38 @@
 package helper;
 
-public class EphemeralID {
+import java.util.UUID;
 
-    String id;
+public class EphemeralID extends Thread {
+
+    private String id;
+    private volatile boolean cancelled;
 
     public EphemeralID() {
-        id = generator();
+        id = "";
+        cancelled = false;
     }
 
     public String getID() {
         return id;
     }
 
-    private String generator() {
-        return "EphemeralID";
+    private void generator() {
+        id = UUID.randomUUID().toString();
+        System.out.println("new generator running ...");
+    }
+
+    public void cancel() {
+        cancelled = true;
+    }
+
+    public void run() {
+        while (!cancelled) {
+            generator();
+            try {
+                sleep(15000);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+        }
     }
 }
