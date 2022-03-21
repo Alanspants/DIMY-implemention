@@ -6,4 +6,10 @@ a new privacy-preserving digital contact tracing protocol called ”Did I Meet Y
 2. Hanqing Guan (z5213081)
 
 # Diary
-Assignment diary will be updated soon...
+## task1
+***schedule:*** <br>
+2022/03/21: design and coding <br>
+***how:*** <br>
+1. generator: java random UUID generator
+2. time keeper: multi-thread generator function
+## task2
