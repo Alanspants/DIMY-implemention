@@ -13,3 +13,15 @@ a new privacy-preserving digital contact tracing protocol called ”Did I Meet Y
 1. generator: java random UUID generator
 2. time keeper: multi-thread generator function
 ## task2
+***schedule:*** <br>
+2022/04/01: k out of n algorithm design <br>
+2022/04/02: coding implementation <br>
+***how:*** <br>
+1. secret spliter: shamir.split()
+2. secret recover: shamir.combine()
+3. broadcast msg: SecretShare.broadcastStr()
+## task3
+***schedule:*** <br>
+2022/04/06: broadcast UDP spliter msg coding implement <br>
+***how:*** <br>
+1. broadcast: use UDP socket to broadcast
