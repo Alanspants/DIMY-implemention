@@ -14,7 +14,7 @@ public class UDPBroadcast {
 
         byte[] buffer = msg.getBytes();
 
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, 4445);
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, 5001);
         socket.send(packet);
         socket.close();
     }

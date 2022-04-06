@@ -8,7 +8,6 @@ import Helper.Helper;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.UUID;
 
 
@@ -59,8 +58,9 @@ public class EphemeralID extends Thread {
     }
 
     public void broadcastShares(int index) throws IOException {
-        System.out.println(index + " Broadcast ing... " + shares[index].broadcastStr());
-        UDPBroadcast.broadcast(shares[index].broadcastStr(), InetAddress.getByName("255.255.255.255"));
+        String msg = id.hashCode() + " " + shares[index].broadcastStr();
+        System.out.println("Broadcast ing... " + msg);
+        UDPBroadcast.broadcast(msg, InetAddress.getByName("255.255.255.255"));
     }
 
     public void run() {
