@@ -3,6 +3,7 @@ package EphID;
 import Shamir.SecretShare;
 import Shamir.Shamir;
 import UDP.UDPBroadcast;
+import Helper.Helper;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -67,7 +68,9 @@ public class EphemeralID extends Thread {
             generator();
             for (int index = 0; index < 5; index++) {
                 try {
-                    broadcastShares(index);
+                    if (!Helper.msgDrop()) {
+                        broadcastShares(index);
+                    }
                     sleep(3000);
                 } catch (IOException|InterruptedException e) {
                     e.printStackTrace();
