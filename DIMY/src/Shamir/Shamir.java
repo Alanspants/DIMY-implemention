@@ -1,4 +1,4 @@
-package helper;
+package Shamir;
 
 import java.math.BigInteger;
 import java.util.Random;

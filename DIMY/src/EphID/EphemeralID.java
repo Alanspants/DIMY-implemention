@@ -1,7 +1,13 @@
-package helper;
+package EphID;
 
+import Shamir.SecretShare;
+import Shamir.Shamir;
+import UDP.UDPBroadcast;
+
+import java.io.IOException;
 import java.math.BigInteger;
-import java.util.Objects;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.UUID;
 
 
@@ -44,20 +50,34 @@ public class EphemeralID extends Thread {
         bigId = new BigInteger(id, 16);
         shares = shamir.split(bigId);
         prime = shamir.getPrime();
+        System.out.println("ephID: " + id);
     }
 
     public void cancel() {
         cancelled = true;
     }
 
+    public void broadcastShares(int index) throws IOException {
+        System.out.println(index + " Broadcast ing... " + shares[index].broadcastStr());
+        UDPBroadcast.broadcast(shares[index].broadcastStr(), InetAddress.getByName("255.255.255.255"));
+    }
+
     public void run() {
         while (!cancelled) {
             generator();
-            try {
-                sleep(15000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
+            for (int index = 0; index < 5; index++) {
+                try {
+                    broadcastShares(index);
+                    sleep(3000);
+                } catch (IOException|InterruptedException e) {
+                    e.printStackTrace();
+                }
             }
+//            try {
+//                sleep(15000);
+//            } catch (InterruptedException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 }
