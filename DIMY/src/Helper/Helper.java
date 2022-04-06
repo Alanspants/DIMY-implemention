@@ -1,5 +1,9 @@
 package Helper;
 
+import Shamir.SecretShare;
+import Shamir.Shamir;
+
+import java.math.BigInteger;
 import java.util.Random;
 
 public class Helper {
@@ -12,5 +16,11 @@ public class Helper {
         } else {
             return false;
         }
+    }
+
+    public static BigInteger sharesRecover(SecretShare[] shares, BigInteger prime) {
+        Shamir shamir = new Shamir(3, 5);
+        BigInteger result = shamir.combine(shares, prime);
+        return result;
     }
 }

@@ -35,6 +35,14 @@ public class EphemeralID extends Thread {
         return shares;
     }
 
+    public BigInteger getBigId() {
+        return bigId;
+    }
+
+    public BigInteger getPrime() {
+        return prime;
+    }
+
     public boolean sharesRecover(SecretShare[] shares) {
         BigInteger result = shamir.combine(shares, prime);
         if (result.equals(bigId)) {
@@ -58,7 +66,7 @@ public class EphemeralID extends Thread {
     }
 
     public void broadcastShares(int index) throws IOException {
-        String msg = id.hashCode() + " " + shares[index].broadcastStr();
+        String msg = bigId.hashCode() + " " + prime + " " + shares[index].broadcastStr();
         System.out.println("Broadcast ing... " + msg);
         UDPBroadcast.broadcast(msg, InetAddress.getByName("255.255.255.255"));
     }

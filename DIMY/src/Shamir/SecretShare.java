@@ -36,6 +36,7 @@ public class SecretShare {
         shares[0] = stringToSecretShare(str0);
         shares[1] = stringToSecretShare(str1);
         shares[2] = stringToSecretShare(str2);
+//        shares[2] = new SecretShare(3, new BigInteger(str2.split(":")[1]));
         return shares;
     }
 
