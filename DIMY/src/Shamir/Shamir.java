@@ -1,104 +1,120 @@
 package Shamir;
 
 import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.Random;
 
-public class Shamir {
-
-    private BigInteger prime;
-
-    private final int k;
-    private final int n;
-    private final Random random;
-
-    private static int CERTAINTY = 50;
-
-    public Shamir(final int k, final int n) {
-        this.k = k;
-        this.n = n;
-
-        random = new Random();
-    }
-
-    public SecretShare[] split(BigInteger secret) {
-        final int modLength = secret.bitLength() + 1;
-
-        prime = new BigInteger(modLength, CERTAINTY, random);
-        final BigInteger[] coeff = new BigInteger[k - 1];
-
+public final class Shamir
+{
+    public static SecretShare[] split(final BigInteger secret, int needed, int available, BigInteger prime, Random random)
+    {
 //        System.out.println("Prime Number: " + prime);
 
-        for (int i = 0; i < k - 1; i++) {
-            coeff[i] = randomZp(prime);
-//            System.out.println("a" + (i + 1) + ": " + coeff[i]);
+        final BigInteger[] coeff = new BigInteger[needed];
+        coeff[0] = secret;
+        for (int i = 1; i < needed; i++)
+        {
+            BigInteger r;
+            while (true)
+            {
+                r = new BigInteger(prime.bitLength(), random);
+                if (r.compareTo(BigInteger.ZERO) > 0 && r.compareTo(prime) < 0)
+                {
+                    break;
+                }
+            }
+            coeff[i] = r;
         }
 
-        final SecretShare[] shares = new SecretShare[n];
-        for (int i = 1; i <= n; i++) {
+        final SecretShare[] shares = new SecretShare[available];
+        for (int x = 1; x <= available; x++)
+        {
             BigInteger accum = secret;
 
-            for (int j = 1; j < k; j++) {
-                final BigInteger t1 = BigInteger.valueOf(i).modPow(BigInteger.valueOf(j), prime);
-                final BigInteger t2 = coeff[j - 1].multiply(t1).mod(prime);
-
-                accum = accum.add(t2).mod(prime);
+            for (int exp = 1; exp < needed; exp++)
+            {
+                accum = accum.add(coeff[exp].multiply(BigInteger.valueOf(x).pow(exp).mod(prime))).mod(prime);
             }
-            shares[i - 1] = new SecretShare(i - 1, accum);
-//            System.out.println("Share " + shares[i - 1]);
+            shares[x - 1] = new SecretShare(x, accum);
+//            System.out.println("Share " + shares[x - 1]);
         }
 
         return shares;
     }
 
-    public BigInteger getPrime() {
-        return prime;
-    }
-
-    public BigInteger combine(final SecretShare[] shares, final BigInteger primeNum) {
+    public static BigInteger combine(final SecretShare[] shares, final BigInteger prime)
+    {
         BigInteger accum = BigInteger.ZERO;
-        for (int i = 0; i < k; i++) {
-            BigInteger num = BigInteger.ONE;
-            BigInteger den = BigInteger.ONE;
 
-            for (int j = 0; j < k; j++) {
-                if (i != j) {
-                    num = num.multiply(BigInteger.valueOf(-j - 1)).mod(primeNum);
-                    den = den.multiply(BigInteger.valueOf(i - j)).mod(primeNum);
-                }
+        for(int formula = 0; formula < shares.length; formula++)
+        {
+            BigInteger numerator = BigInteger.ONE;
+            BigInteger denominator = BigInteger.ONE;
+
+            for(int count = 0; count < shares.length; count++)
+            {
+                if(formula == count)
+                    continue; // If not the same value
+
+                int startposition = shares[formula].getNumber();
+                int nextposition = shares[count].getNumber();
+
+                numerator = numerator.multiply(BigInteger.valueOf(nextposition).negate()).mod(prime); // (numerator * -nextposition) % prime;
+                denominator = denominator.multiply(BigInteger.valueOf(startposition - nextposition)).mod(prime); // (denominator * (startposition - nextposition)) % prime;
             }
-
-//            System.out.println("den: " + den + ", num: " + den + ", inv: " + den.modInverse(primeNum));
-            final BigInteger value = shares[i].getShare();
-
-            final BigInteger tmp = value.multiply(num).multiply(den.modInverse(primeNum)).mod(primeNum);
-            accum = accum.add(primeNum).add(tmp).mod(primeNum);
-
-//            System.out.println("value: " + value + ", tmp: " + tmp + ", accum: " + accum);
+            BigInteger value = shares[formula].getShare();
+            BigInteger tmp = value.multiply(numerator) . multiply(modInverse(denominator, prime));
+            accum = prime.add(accum).add(tmp) . mod(prime); //  (prime + accum + (value * numerator * modInverse(denominator))) % prime;
         }
 
-//        System.out.println("The secret is: " + accum);
+//        System.out.println("The secret is: " + accum + "\n");
 
         return accum;
     }
 
-    private BigInteger randomZp(final BigInteger p) {
-        while (true) {
-            final BigInteger r = new BigInteger(p.bitLength(), random);
-            if (r.compareTo(BigInteger.ZERO) > 0 && r.compareTo(p) < 0) {
-                return r;
-            }
+    private static BigInteger[] gcdD(BigInteger a, BigInteger b)
+    {
+        if (b.compareTo(BigInteger.ZERO) == 0)
+            return new BigInteger[] {a, BigInteger.ONE, BigInteger.ZERO};
+        else
+        {
+            BigInteger n = a.divide(b);
+            BigInteger c = a.mod(b);
+            BigInteger[] r = gcdD(b, c);
+            return new BigInteger[] {r[0], r[2], r[1].subtract(r[2].multiply(n))};
         }
     }
 
-//    public static void main(final String[] args) {
-//        final Shamir shamir = new Shamir(11, 20);
-//
-//        final BigInteger secret = new BigInteger("1234567890123456789012345678901234567890");
-//        final SecretShare[] shares = shamir.split(secret);
-//        final BigInteger prime = shamir.getPrime();
-//
-//        final Shamir shamir2 = new Shamir(11, 20);
-//        final BigInteger result = shamir2.combine(shares, prime);
-//
-//    }
+    private static BigInteger modInverse(BigInteger k, BigInteger prime)
+    {
+        k = k.mod(prime);
+        BigInteger r = (k.compareTo(BigInteger.ZERO) == -1) ? (gcdD(prime, k.negate())[2]).negate() : gcdD(prime,k)[2];
+        return prime.add(r).mod(prime);
+    }
+
+    public static void main(final String[] args)
+    {
+        final int CERTAINTY = 256;
+        final SecureRandom random = new SecureRandom();
+
+        final BigInteger secret = new BigInteger("123");
+
+        // prime number must be longer then secret number
+        final BigInteger prime = new BigInteger(secret.bitLength() + 1, CERTAINTY, random);
+
+        // 2 - at least 2 secret parts are needed to view secret
+        // 5 - there are 5 persons that get secret parts
+        final SecretShare[] shares = Shamir.split(secret, 2, 5, prime, random);
+
+
+        // we can use any combination of 2 or more parts of secret
+        SecretShare[] sharesToViewSecret = new SecretShare[] {shares[0],shares[1]}; // 0 & 1
+        BigInteger result = Shamir.combine(sharesToViewSecret, prime);
+
+        sharesToViewSecret = new SecretShare[] {shares[1],shares[4]}; // 1 & 4
+        result = Shamir.combine(sharesToViewSecret, prime);
+
+        sharesToViewSecret = new SecretShare[] {shares[0],shares[1],shares[3]}; // 0 & 1 & 3
+        result = Shamir.combine(sharesToViewSecret, prime);
+    }
 }
