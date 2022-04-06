@@ -2,6 +2,7 @@ package UDP;
 
 import Helper.Helper;
 import Shamir.SecretShare;
+import Shamir.Shamir;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -9,6 +10,8 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.SocketException;
 import java.util.HashMap;
+
+import static Shamir.SecretShare.getSecretShareByStr;
 
 public class UDPReceive extends Thread {
     HashMap<String, String[]> shares = new HashMap<>();
@@ -37,11 +40,24 @@ public class UDPReceive extends Thread {
             }
             shares.put(bigIdHash, shareArray);
             if (i >= 2) {
-                SecretShare[] sharesRCV = SecretShare.createSecretShareArray(shareArray[0], shareArray[1], shareArray[2]);
-                BigInteger bigIdRecover = Helper.sharesRecover(sharesRCV, new BigInteger(prime));
+//                SecretShare[] sharesRCV = SecretShare.createSecretShareArray(shareArray[0], shareArray[1], shareArray[2]);
+                SecretShare[] secretShare = {
+                        getSecretShareByStr(shareArray[0]),
+                        getSecretShareByStr(shareArray[1]),
+                        getSecretShareByStr(shareArray[2]),
+                };
+//                BigInteger bigIdRecover = Helper.sharesRecover(sharesRCV, new BigInteger(prime));
+                BigInteger recoverResult = Shamir.combine(secretShare, new BigInteger(prime));
+                System.out.println("----------------------");
                 System.out.println("recovering...");
-                System.out.println("bigIdHash: " + bigIdHash);
-                System.out.println("bigIdRecover: " + bigIdRecover.hashCode());
+                System.out.println("    [bigIdHash]: " + bigIdHash);
+                System.out.println("    [bigIdRecover]: " + recoverResult.hashCode());
+                if (Integer.parseInt(bigIdHash) == recoverResult.hashCode()) {
+                    System.out.println("    [recover result]: YES!!");
+                } else {
+                    System.out.println("    [recover result]: NO!!");
+                }
+                System.out.println("----------------------");
             }
         }
     }
@@ -65,14 +81,6 @@ public class UDPReceive extends Thread {
             String content = new String(data, 0, dp.getLength());
             System.out.println("content: " + content);
             verify(content);
-
-//            String[] contents = content.toString().split(" ");
-//            String ephIDHash = contents[0];
-//            String share = contents[1];
-//
-//            System.out.println("ephIDHash: " + ephIDHash);
-//            System.out.println("share: " + share);
-//            System.out.println("------------------------");
         }
     }
 
