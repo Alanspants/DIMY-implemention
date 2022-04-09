@@ -8,12 +8,14 @@ import Helper.Helper;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
-import java.security.SecureRandom;
+import java.security.*;
+import java.util.Base64;
 import java.util.UUID;
 import java.security.SecureRandom;
 
 public class EphemeralID extends Thread {
-    private String id;
+    private String pubKey;
+    private String priKey;
     private volatile boolean cancelled;
 
     final int CERTAINTY = 256;
@@ -23,13 +25,19 @@ public class EphemeralID extends Thread {
     private BigInteger prime;
     public SecretShare[] shares;
 
-    public EphemeralID() {
-        id = "";
+    KeyPairGenerator kpg;
+    KeyPair kp;
+
+    public EphemeralID() throws NoSuchAlgorithmException {
+        pubKey = "";
+        priKey = "";
         cancelled = false;
+        kpg = KeyPairGenerator.getInstance("EC");
+        kpg.initialize(128);
     }
 
-    public String getID() {
-        return id;
+    public String getPubKey() {
+        return pubKey;
     }
 
     public SecretShare[] getShares() {
@@ -39,12 +47,22 @@ public class EphemeralID extends Thread {
     public BigInteger getPrime() { return prime; }
 
     private void generator() {
+
+        kp = kpg.generateKeyPair();
+
         System.out.println("----------------------");
         System.out.println("new generator running ...");
-        id = UUID.randomUUID().toString().replace("-","");
-        System.out.println("ephID: " + id);
+//        id = UUID.randomUUID().toString().replace("-","");
+//        System.out.println("ephID: " + id);
+        PublicKey pub = kp.getPublic();
+        byte[] pubBytes = pub.getEncoded();
+        pubKey = Base64.getEncoder().encodeToString(pubBytes);
 
-        secret = new BigInteger(id.getBytes());
+        PrivateKey pri = kp.getPrivate();
+        byte[] priBytes = pri.getEncoded();
+        priKey = Base64.getEncoder().encodeToString(priBytes);
+
+        secret = new BigInteger(pubKey.getBytes());
         prime = new BigInteger(secret.bitLength() + 1, CERTAINTY, random);
         shares = Shamir.split(secret, 3, 5, prime, random);
         System.out.println("secret: " + secret);
