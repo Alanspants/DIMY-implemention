@@ -14,8 +14,8 @@ import java.util.UUID;
 import java.security.SecureRandom;
 
 public class EphemeralID extends Thread {
-    private String pubKey;
-    private String priKey;
+    private BigInteger pubKey;
+    private BigInteger priKey;
     private volatile boolean cancelled;
 
     final int CERTAINTY = 256;
@@ -29,14 +29,14 @@ public class EphemeralID extends Thread {
     KeyPair kp;
 
     public EphemeralID() throws NoSuchAlgorithmException {
-        pubKey = "";
-        priKey = "";
+        pubKey = new BigInteger("0");
+        priKey = new BigInteger("0");
         cancelled = false;
         kpg = KeyPairGenerator.getInstance("EC");
         kpg.initialize(128);
     }
 
-    public String getPubKey() {
+    public BigInteger getPubKey() {
         return pubKey;
     }
 
@@ -56,16 +56,18 @@ public class EphemeralID extends Thread {
 //        System.out.println("ephID: " + id);
         PublicKey pub = kp.getPublic();
         byte[] pubBytes = pub.getEncoded();
-        pubKey = Base64.getEncoder().encodeToString(pubBytes);
+        pubKey = new BigInteger(Base64.getEncoder().encodeToString(pubBytes).getBytes());
+        System.out.println("ephID (pubKey): " + pubKey);
+        System.out.println("ephID hash value: " + pubKey.hashCode());
 
         PrivateKey pri = kp.getPrivate();
         byte[] priBytes = pri.getEncoded();
-        priKey = Base64.getEncoder().encodeToString(priBytes);
+        priKey = new BigInteger(Base64.getEncoder().encodeToString(priBytes).getBytes());
 
-        secret = new BigInteger(pubKey.getBytes());
-        prime = new BigInteger(secret.bitLength() + 1, CERTAINTY, random);
-        shares = Shamir.split(secret, 3, 5, prime, random);
-        System.out.println("secret: " + secret);
+//        secret = new BigInteger(pubKey.getBytes());
+        prime = new BigInteger(pubKey.bitLength() + 1, CERTAINTY, random);
+        shares = Shamir.split(pubKey, 3, 5, prime, random);
+//        System.out.println("secret: " + pubKey);
         System.out.println("----------------------");
     }
 
@@ -74,9 +76,9 @@ public class EphemeralID extends Thread {
     }
 
     public void broadcastShares(int index) throws IOException {
-        String msg = secret.hashCode() + " " + prime + " " + shares[index].broadcastStr();
+        String msg = pubKey.hashCode() + " " + prime + " " + shares[index].broadcastStr();
         System.out.println("Broadcast ing... ");
-        System.out.println("    [secret hash code]: " + secret.hashCode());
+        System.out.println("    [secret hash code]: " + pubKey.hashCode());
         System.out.println("    [prime]: " + prime);
         System.out.println("    [share]: " + shares[index].broadcastStr());
         UDPBroadcast.broadcast(msg, InetAddress.getByName("255.255.255.255"));
