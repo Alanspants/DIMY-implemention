@@ -1,14 +1,13 @@
 package UDP;
 
+import EphID.EphemeralID;
 import Helper.Helper;
 import Shamir.SecretShare;
 import Shamir.Shamir;
 
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.SocketException;
+import java.net.*;
 import java.util.HashMap;
 
 import static Shamir.SecretShare.getSecretShareByStr;
@@ -16,9 +15,11 @@ import static Shamir.SecretShare.getSecretShareByStr;
 public class UDPReceive extends Thread {
     HashMap<String, String[]> shares = new HashMap<>();
     int port;
+    EphemeralID ephID;
 
-    public UDPReceive(int port) {
+    public UDPReceive(int port, EphemeralID ephID) {
         this.port = port;
+        this.ephID = ephID;
     }
 
     public void verify(String content) {
@@ -65,7 +66,9 @@ public class UDPReceive extends Thread {
     public void run() {
         DatagramSocket ds = null;
         try {
-            ds = new DatagramSocket(this.port);
+            ds = new DatagramSocket(null);
+            ds.setReuseAddress(true);
+            ds.bind(new InetSocketAddress(5001));
         } catch (SocketException e) {
             e.printStackTrace();
         }
@@ -79,14 +82,16 @@ public class UDPReceive extends Thread {
             }
 
             String content = new String(data, 0, dp.getLength());
-            System.out.println("content: " + content);
-            verify(content);
+            if (Integer.parseInt(content.split(" ")[0]) != ephID.getPubKeyHash()) {
+                System.out.println("content: " + content);
+                verify(content);
+            }
         }
     }
 
-    public static void main(String[] args) {
-        UDPReceive UDPRcv = new UDPReceive(5001);
-        UDPRcv.start();
-    }
+//    public static void main(String[] args) {
+//        UDPReceive UDPRcv = new UDPReceive(5001);
+//        UDPRcv.start();
+//    }
 
 }

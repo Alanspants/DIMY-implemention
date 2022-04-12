@@ -1,15 +1,14 @@
 package UDP;
 
 import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.net.*;
 
 public class UDPBroadcast {
-    private static DatagramSocket socket = null;
+    private static DatagramSocket socket;
 
     public static void broadcast (String msg, InetAddress address) throws IOException {
         socket = new DatagramSocket();
+        socket.setReuseAddress(true);
         socket.setBroadcast(true);
 
         byte[] buffer = msg.getBytes();

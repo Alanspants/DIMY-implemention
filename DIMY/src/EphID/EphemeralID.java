@@ -10,7 +10,6 @@ import java.math.BigInteger;
 import java.net.InetAddress;
 import java.security.*;
 import java.util.Base64;
-import java.util.UUID;
 import java.security.SecureRandom;
 
 public class EphemeralID extends Thread {
@@ -38,6 +37,10 @@ public class EphemeralID extends Thread {
 
     public BigInteger getPubKey() {
         return pubKey;
+    }
+
+    public int getPubKeyHash() {
+        return pubKey.hashCode();
     }
 
     public SecretShare[] getShares() {
