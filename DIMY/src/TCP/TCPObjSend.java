@@ -5,6 +5,8 @@ import com.google.common.hash.BloomFilter;
 import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 
 public class TCPObjSend {
     public static void sendQBF(BloomFilter qbf) throws IOException {
@@ -26,13 +28,24 @@ public class TCPObjSend {
         socket.setReuseAddress(true);
 
         DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
+        DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+        ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+
+
         dataOutputStream.writeUTF("CBF");
         dataOutputStream.flush();
 
-        ObjectOutputStream ObjOS = new ObjectOutputStream(socket.getOutputStream());
-        ObjOS.writeObject(cbf);
+        objectOutputStream.writeObject(cbf);
+        objectOutputStream.flush();
+
         System.out.println("------\nCBF send\nCBF:" + cbf + "\n------");
 
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(dataInputStream));
+        String msg = bufferedReader.readLine();
+        System.out.println(msg);
+
         socket.close();
+
     }
 }
