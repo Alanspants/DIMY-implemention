@@ -32,7 +32,7 @@ public class DBF extends Thread{
     }
 
     public BloomFilter newQBF() {
-        BloomFilter<String> QBF = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 6000, 0.001);
+        BloomFilter<String> QBF = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 1000, 0.001);
         for (int i = 0; i < 5; i++) {
             QBF.putAll(DBFs[i]);
         }
@@ -44,8 +44,8 @@ public class DBF extends Thread{
             if (DBFsIndex < 6) {
                 newDBF();
                 try {
-                    sleep(90000);
-//                    sleep(1000);
+//                    sleep(90000);
+                    sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
