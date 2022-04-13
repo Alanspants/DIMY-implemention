@@ -1,5 +1,6 @@
 package UDP;
 
+import BF.DBF;
 import EphID.EphemeralID;
 import Helper.Helper;
 import Shamir.SecretShare;
@@ -26,10 +27,12 @@ public class UDPReceive extends Thread {
     int port;
     EphemeralID ephID;
     BigInteger recoverEphID;
+    DBF dbf;
 
-    public UDPReceive(int port, EphemeralID ephID) {
+    public UDPReceive(int port, EphemeralID ephID, DBF dbf) {
         this.port = port;
         this.ephID = ephID;
+        this.dbf = dbf;
     }
 
     public boolean verify(String content) {
@@ -54,13 +57,11 @@ public class UDPReceive extends Thread {
             }
             shares.put(ephIDHash, shareArray);
             if (i >= 2) {
-//                SecretShare[] sharesRCV = SecretShare.createSecretShareArray(shareArray[0], shareArray[1], shareArray[2]);
                 SecretShare[] secretShare = {
                         getSecretShareByStr(shareArray[0]),
                         getSecretShareByStr(shareArray[1]),
                         getSecretShareByStr(shareArray[2]),
                 };
-//                BigInteger bigIdRecover = Helper.sharesRecover(sharesRCV, new BigInteger(prime));
                 BigInteger recoverResult = Shamir.combine(secretShare, new BigInteger(prime));
                 System.out.println("----------------------");
                 System.out.println("recovering...");
@@ -94,6 +95,7 @@ public class UDPReceive extends Thread {
         byte[] sharedSecret = ka.generateSecret();
         System.out.println("DHing...");
         System.out.println("    [Share key]: " + printHexBinary(sharedSecret));
+        dbf.insert(printHexBinary(sharedSecret));
     }
 
     public void run() {
@@ -129,23 +131,6 @@ public class UDPReceive extends Thread {
                         } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException e) {
                             e.printStackTrace();
                         }
-//                        try {
-//                            byte[] otherPK = recoverEphID.toByteArray();
-//                            KeyFactory kf = KeyFactory.getInstance("EC");
-//                            X509EncodedKeySpec pkSpec = new X509EncodedKeySpec(otherPK);
-//                            PublicKey otherPublicKey = kf.generatePublic(pkSpec);
-//
-//                            KeyAgreement ka = KeyAgreement.getInstance("ECDH");
-//                            ka.init(ephID.kp.getPrivate());
-//                            ka.doPhase(otherPublicKey, true);
-//
-//                            byte[] sharedSecret = ka.generateSecret();
-//                            System.out.println("DHing...");
-//                            System.out.println("    [Share key]: " + printHexBinary(sharedSecret));
-//                        } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException e) {
-//                            e.printStackTrace();
-//                        }
-
                         System.out.println("----------------------");
 
                     }
@@ -158,21 +143,6 @@ public class UDPReceive extends Thread {
                     System.out.println("----------------------");
                     System.out.println("Receiving... ");
                     System.out.println("    [DH][content]: " + content);
-//                    try {
-//                        byte[] otherPK = new BigInteger(otherPubKey).toByteArray();
-//                        KeyFactory kf = KeyFactory.getInstance("EC");
-//                        X509EncodedKeySpec pkSpec = new X509EncodedKeySpec(otherPK);
-//                        PublicKey otherPublicKey = kf.generatePublic(pkSpec);
-//
-//                        KeyAgreement ka = KeyAgreement.getInstance("ECDH");
-//                        ka.init(ephID.kp.getPrivate());
-//                        ka.doPhase(otherPublicKey, true);
-//                        byte[] sharedSecret = ka.generateSecret();
-//                        System.out.println("DHing...");
-//                        System.out.println("    [Share key]: " + printHexBinary(sharedSecret));
-//                    } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException e) {
-//                        e.printStackTrace();
-//                    }
                     try {
                         DH(new BigInteger(otherPubKey));
                     } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException e) {
