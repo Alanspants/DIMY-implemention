@@ -1,6 +1,8 @@
 package TCP;
 
+import com.google.common.base.Charsets;
 import com.google.common.hash.BloomFilter;
+import com.google.common.hash.Funnels;
 
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -10,8 +12,10 @@ import java.net.Socket;
 
 public class TCPObjReceive extends Thread{
 
-    public TCPObjReceive () {
+    BloomFilter<String> QBFs;
 
+    public TCPObjReceive () {
+        QBFs = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 10000, 0.001);
     }
 
     public void run() {
@@ -27,6 +31,8 @@ public class TCPObjReceive extends Thread{
                 System.out.println("\n------\nQBF receive\nQBF:" + receiveBF + "\n------\n");
                 serverSocket.close();
                 socket.close();
+
+                QBFs.putAll(receiveBF);
             }
         } catch (IOException | ClassNotFoundException e) {
             e.printStackTrace();
