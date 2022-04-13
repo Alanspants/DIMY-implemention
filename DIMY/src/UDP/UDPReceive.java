@@ -5,33 +5,46 @@ import Helper.Helper;
 import Shamir.SecretShare;
 import Shamir.Shamir;
 
+import javax.crypto.KeyAgreement;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.*;
+import java.security.InvalidKeyException;
+import java.security.KeyFactory;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
+import java.security.spec.InvalidKeySpecException;
+import java.security.spec.X509EncodedKeySpec;
+import java.util.Arrays;
 import java.util.HashMap;
 
 import static Shamir.SecretShare.getSecretShareByStr;
+import static javax.xml.bind.DatatypeConverter.printHexBinary;
 
 public class UDPReceive extends Thread {
     HashMap<String, String[]> shares = new HashMap<>();
     int port;
     EphemeralID ephID;
+    BigInteger recoverEphID;
 
     public UDPReceive(int port, EphemeralID ephID) {
         this.port = port;
         this.ephID = ephID;
     }
 
-    public void verify(String content) {
-        String bigIdHash = content.split(" ")[0];
-        String prime = content.split(" ")[1];
-        String share = content.split(" ")[2];
+    public boolean verify(String content) {
+        String ephIDHash = content.split(" ")[1];
+        String prime = content.split(" ")[2];
+        String share = content.split(" ")[3];
 
-        if (!shares.containsKey(bigIdHash)){
+        if (!shares.containsKey(ephIDHash)){
             String[] shareArray = new String[]{share, "", ""};
-            shares.put(bigIdHash, shareArray);
+            shares.put(ephIDHash, shareArray);
         } else {
-            String[] shareArray = shares.get(bigIdHash);
+            String[] shareArray = shares.get(ephIDHash);
+            if (!(shareArray[0].equals("") || shareArray[1].equals("") || shareArray[2].equals(""))) {
+                return false;
+            }
             int i = 0;
             for(i = 0; i < 3; i++) {
                 if (shareArray[i].equals("")) {
@@ -39,7 +52,7 @@ public class UDPReceive extends Thread {
                     break;
                 }
             }
-            shares.put(bigIdHash, shareArray);
+            shares.put(ephIDHash, shareArray);
             if (i >= 2) {
 //                SecretShare[] sharesRCV = SecretShare.createSecretShareArray(shareArray[0], shareArray[1], shareArray[2]);
                 SecretShare[] secretShare = {
@@ -51,16 +64,36 @@ public class UDPReceive extends Thread {
                 BigInteger recoverResult = Shamir.combine(secretShare, new BigInteger(prime));
                 System.out.println("----------------------");
                 System.out.println("recovering...");
-                System.out.println("    [bigIdHash]: " + bigIdHash);
-                System.out.println("    [bigIdRecover]: " + recoverResult.hashCode());
-                if (Integer.parseInt(bigIdHash) == recoverResult.hashCode()) {
+                System.out.println("    [actual ephIDHash]: " + ephIDHash);
+                System.out.println("    [recover ephIDHash]: " + recoverResult.hashCode());
+                if (Integer.parseInt(ephIDHash) == recoverResult.hashCode()) {
                     System.out.println("    [recover result]: YES!!");
+                    System.out.println("----------------------");
+                    recoverEphID = recoverResult;
+                    return true;
                 } else {
                     System.out.println("    [recover result]: NO!!");
+                    System.out.println("----------------------");
+                    return false;
                 }
-                System.out.println("----------------------");
             }
         }
+        return false;
+    }
+
+    private void DH(BigInteger otherPKBI) throws NoSuchAlgorithmException, InvalidKeySpecException, InvalidKeyException {
+        byte[] otherPK = otherPKBI.toByteArray();
+        KeyFactory kf = KeyFactory.getInstance("EC");
+        X509EncodedKeySpec pkSpec = new X509EncodedKeySpec(otherPK);
+        PublicKey otherPublicKey = kf.generatePublic(pkSpec);
+
+        KeyAgreement ka = KeyAgreement.getInstance("ECDH");
+        ka.init(ephID.kp.getPrivate());
+        ka.doPhase(otherPublicKey, true);
+
+        byte[] sharedSecret = ka.generateSecret();
+        System.out.println("DHing...");
+        System.out.println("    [Share key]: " + printHexBinary(sharedSecret));
     }
 
     public void run() {
@@ -82,16 +115,73 @@ public class UDPReceive extends Thread {
             }
 
             String content = new String(data, 0, dp.getLength());
-            if (Integer.parseInt(content.split(" ")[0]) != ephID.getPubKeyHash()) {
-                System.out.println("content: " + content);
-                verify(content);
+            if (content.split(" ")[0].equals("Shamir")) {
+                if (Integer.parseInt(content.split(" ")[1]) != ephID.getPubKeyHash()) {
+                    System.out.println("Receiving... ");
+                    System.out.println("    [Shamir][content]: " + content);
+                    if (verify(content)) {
+                        // 如果接收方完成了对发送方的ephID的reconstruct
+                        // 进行一个广播，将自己的public key广播出去
+                        // 同时广播对方的public key的hash值，从而使得对方知道这个DH public key是发给自己的
+                         try {
+                            ephID.broadcastDHPubKey(ephID.getPubKey().toString(), String.valueOf(recoverEphID.hashCode()));
+                            DH(recoverEphID);
+                        } catch (IOException | NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException e) {
+                            e.printStackTrace();
+                        }
+//                        try {
+//                            byte[] otherPK = recoverEphID.toByteArray();
+//                            KeyFactory kf = KeyFactory.getInstance("EC");
+//                            X509EncodedKeySpec pkSpec = new X509EncodedKeySpec(otherPK);
+//                            PublicKey otherPublicKey = kf.generatePublic(pkSpec);
+//
+//                            KeyAgreement ka = KeyAgreement.getInstance("ECDH");
+//                            ka.init(ephID.kp.getPrivate());
+//                            ka.doPhase(otherPublicKey, true);
+//
+//                            byte[] sharedSecret = ka.generateSecret();
+//                            System.out.println("DHing...");
+//                            System.out.println("    [Share key]: " + printHexBinary(sharedSecret));
+//                        } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException e) {
+//                            e.printStackTrace();
+//                        }
+
+                        System.out.println("----------------------");
+
+                    }
+                }
+            } else if (content.split(" ")[0].equals("DH")) {
+                String myPubKey = content.split(" ")[1];
+                String otherPubKey = content.split(" ")[2];
+                // 通过比对DH msg中的hash值和自己pubKey的hash值，判断这条msg是不是发给自己的
+                if (myPubKey.equals(String.valueOf(ephID.getPubKey().hashCode()))) {
+                    System.out.println("----------------------");
+                    System.out.println("Receiving... ");
+                    System.out.println("    [DH][content]: " + content);
+//                    try {
+//                        byte[] otherPK = new BigInteger(otherPubKey).toByteArray();
+//                        KeyFactory kf = KeyFactory.getInstance("EC");
+//                        X509EncodedKeySpec pkSpec = new X509EncodedKeySpec(otherPK);
+//                        PublicKey otherPublicKey = kf.generatePublic(pkSpec);
+//
+//                        KeyAgreement ka = KeyAgreement.getInstance("ECDH");
+//                        ka.init(ephID.kp.getPrivate());
+//                        ka.doPhase(otherPublicKey, true);
+//                        byte[] sharedSecret = ka.generateSecret();
+//                        System.out.println("DHing...");
+//                        System.out.println("    [Share key]: " + printHexBinary(sharedSecret));
+//                    } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException e) {
+//                        e.printStackTrace();
+//                    }
+                    try {
+                        DH(new BigInteger(otherPubKey));
+                    } catch (NoSuchAlgorithmException | InvalidKeySpecException | InvalidKeyException e) {
+                        e.printStackTrace();
+                    }
+                    System.out.println("----------------------");
+                }
             }
         }
     }
-
-//    public static void main(String[] args) {
-//        UDPReceive UDPRcv = new UDPReceive(5001);
-//        UDPRcv.start();
-//    }
 
 }
