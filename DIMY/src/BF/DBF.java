@@ -1,8 +1,11 @@
 package BF;
 
+import TCP.TCPObjSend;
 import com.google.common.base.Charsets;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
+
+import java.io.IOException;
 
 public class DBF extends Thread{
 
@@ -28,12 +31,12 @@ public class DBF extends Thread{
         }
     }
 
-    public void newQBF() {
-        BloomFilter<String> QBF = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 1000, 0.001);
+    public BloomFilter newQBF() {
+        BloomFilter<String> QBF = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 6000, 0.001);
         for (int i = 0; i < 5; i++) {
             QBF.putAll(DBFs[i]);
         }
-        System.out.println(QBF);
+        return QBF;
     }
 
     public void run() {
@@ -42,37 +45,24 @@ public class DBF extends Thread{
                 newDBF();
                 try {
                     sleep(90000);
+//                    sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
                 DBFsIndex++;
             } else {
+                try {
+                    TCPObjSend.sendQBF(newQBF());
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
                 DBFsIndex = 0;
             }
         }
     }
 
-//    public void run() {
-//        while(true) {
-//            if (DBFsIndex < 6) {
-//                newDBF();
-//                insert("hello_" + DBFsIndex);
-//                try {
-////                    sleep(90000);
-//                    sleep(5000);
-//                } catch (InterruptedException e) {
-//                    e.printStackTrace();
-//                }
-//                DBFsIndex++;
-//            } else {
-//                newQBF();
-//                DBFsIndex = 0;
-//            }
-//        }
-//    }
-//
-//    public static void main(String[] args) {
-//        DBF dbf = new DBF();
-//        dbf.start();
-//    }
+    public static void main(String[] args) {
+        DBF dbf = new DBF();
+        dbf.start();
+    }
 }
