@@ -20,4 +20,19 @@ public class TCPObjSend {
         System.out.println("\n------\nQBF send\nQBF:" + qbf + "\n------\n");
         socket.close();
     }
+
+    public static void sendCBF(BloomFilter cbf) throws IOException {
+        Socket socket = new Socket("localhost", 5002);
+        socket.setReuseAddress(true);
+
+        DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
+        dataOutputStream.writeUTF("CBF");
+        dataOutputStream.flush();
+
+        ObjectOutputStream ObjOS = new ObjectOutputStream(socket.getOutputStream());
+        ObjOS.writeObject(cbf);
+        System.out.println("------\nCBF send\nCBF:" + cbf + "\n------");
+
+        socket.close();
+    }
 }

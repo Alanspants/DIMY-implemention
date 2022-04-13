@@ -4,10 +4,7 @@ import com.google.common.base.Charsets;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnels;
 
-import java.io.DataInputStream;
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
+import java.io.*;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -34,6 +31,12 @@ public class TCPObjReceive extends Thread{
                     ObjectInputStream ObjIS = new ObjectInputStream(socket.getInputStream());
                     BloomFilter receiveBF = (BloomFilter) ObjIS.readObject();
                     System.out.println("\n------\nQBF receive\nQBF:" + receiveBF + "\n------\n");
+                    QBFs.putAll(receiveBF);
+                } else if (msg.equals("CBF")) {
+                    ObjectOutputStream ObjOS = new ObjectOutputStream(socket.getOutputStream());
+                    ObjectInputStream ObjIS = new ObjectInputStream(socket.getInputStream());
+                    BloomFilter receiveBF = (BloomFilter) ObjIS.readObject();
+                    System.out.println("\n------\nCBF receive\nCBF:" + receiveBF + "\n------\n");
                     QBFs.putAll(receiveBF);
                 }
                 serverSocket.close();

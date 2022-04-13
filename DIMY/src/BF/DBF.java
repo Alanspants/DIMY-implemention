@@ -39,13 +39,23 @@ public class DBF extends Thread{
         return QBF;
     }
 
+    public BloomFilter newCBF() {
+        BloomFilter<String> CBF = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 1000, 0.001);
+        for (int i = 0; i < 5; i++) {
+            if (DBFs[i] != null) {
+                CBF.putAll(DBFs[i]);
+            }
+        }
+        return CBF;
+    }
+
     public void run() {
         while(true) {
             if (DBFsIndex < 6) {
                 newDBF();
                 try {
-//                    sleep(90000);
-                    sleep(1000);
+                    sleep(90000);
+//                    sleep(1000);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
@@ -61,8 +71,4 @@ public class DBF extends Thread{
         }
     }
 
-    public static void main(String[] args) {
-        DBF dbf = new DBF();
-        dbf.start();
-    }
 }
