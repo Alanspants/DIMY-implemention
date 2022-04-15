@@ -13,7 +13,7 @@ public class UDPBroadcast {
 
         byte[] buffer = msg.getBytes();
 
-        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, 5001);
+        DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, 55001);
         socket.send(packet);
         socket.close();
     }

@@ -14,7 +14,7 @@ public class Dimy {
         EphemeralID ephemeralID = new EphemeralID();
         ephemeralID.start();
 
-        UDPReceive UDPRcv = new UDPReceive(5001, ephemeralID, dbf);
+        UDPReceive UDPRcv = new UDPReceive(55001, ephemeralID, dbf);
         UDPRcv.start();
 
         Runtime.getRuntime().addShutdownHook(new Thread() {
