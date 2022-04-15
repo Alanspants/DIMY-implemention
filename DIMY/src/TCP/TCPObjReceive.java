@@ -28,7 +28,7 @@ public class TCPObjReceive extends Thread{
         ServerSocket serverSocket = null;
         try {
             while (true) {
-                serverSocket = new ServerSocket(5002);
+                serverSocket = new ServerSocket(55000);
                 serverSocket.setReuseAddress(true);
                 Socket socket = serverSocket.accept();
 

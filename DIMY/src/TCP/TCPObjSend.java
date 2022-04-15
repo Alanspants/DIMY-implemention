@@ -10,7 +10,7 @@ import java.nio.charset.StandardCharsets;
 
 public class TCPObjSend {
     public static void sendQBF(BloomFilter qbf) throws IOException {
-        Socket socket = new Socket("localhost", 5002);
+        Socket socket = new Socket("localhost", 55000);
         socket.setReuseAddress(true);
 
         DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
@@ -40,7 +40,7 @@ public class TCPObjSend {
     }
 
     public static void sendCBF(BloomFilter cbf) throws IOException {
-        Socket socket = new Socket("localhost", 5002);
+        Socket socket = new Socket("localhost", 55000);
         socket.setReuseAddress(true);
 
         DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
