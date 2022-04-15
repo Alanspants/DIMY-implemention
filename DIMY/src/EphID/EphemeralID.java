@@ -58,7 +58,7 @@ public class EphemeralID extends Thread {
 
         kp = kpg.generateKeyPair();
 
-        System.out.println("----------------------");
+        System.out.println("\n----------------------");
         System.out.println("new generator running ...");
 
 //        id = UUID.randomUUID().toString().replace("-","");
@@ -75,7 +75,7 @@ public class EphemeralID extends Thread {
 
         prime = new BigInteger(pubKey.bitLength() + 1, CERTAINTY, random);
         shares = Shamir.split(pubKey, 3, 5, prime, random);
-        System.out.println("----------------------");
+        System.out.println("----------------------\n");
     }
 
     public void cancel() {
@@ -86,16 +86,18 @@ public class EphemeralID extends Thread {
         String msg = "Shamir " + pubKey.hashCode() + " " + prime + " " + shares[index].broadcastStr();
         System.out.println("Broadcasting... ");
         System.out.println("    [secret hash code]: " + pubKey.hashCode());
-        System.out.println("    [prime]: " + prime);
+//        System.out.println("    [prime]: " + prime);
         System.out.println("    [share]: " + shares[index].broadcastStr());
         UDPBroadcast.broadcast(msg, InetAddress.getByName("255.255.255.255"));
     }
 
     public void broadcastDHPubKey(String myPubKey, String otherPubKey) throws IOException {
-        System.out.println("Broadcasting... ");
+        System.out.println("----------------------");
+        System.out.println("Diffle-Hellman broadcasting... ");
         System.out.println("    [other's pub key hash]: " + otherPubKey);
         System.out.println("    [my pub key]: " + myPubKey);
         String msg = "DH " +  otherPubKey + " " + myPubKey;
+        System.out.println("    [DH][content]: " + msg);
         UDPBroadcast.broadcast(msg, InetAddress.getByName("255.255.255.255"));
     }
 
