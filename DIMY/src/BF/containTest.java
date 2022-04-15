@@ -1,22 +1,14 @@
-package Helper;
+package BF;
 
+import com.google.common.base.Charsets;
 import com.google.common.hash.BloomFilter;
+import com.google.common.hash.Funnels;
 
 import java.lang.reflect.Field;
 import java.util.BitSet;
-import java.util.Random;
+import java.util.function.IntPredicate;
 
-public class Helper {
-
-    public static boolean msgDrop() {
-        Random rand = new Random();
-        int value = rand.nextInt(10);
-        if (value < 5) {
-            return true;
-        } else {
-            return false;
-        }
-    }
+public class containTest {
 
     public static <T> boolean intersectCheck(BloomFilter<T> bloomFilter, BloomFilter<T> that) {
         BitSet thisBitSet = getBitSet(bloomFilter);
@@ -40,4 +32,16 @@ public class Helper {
         }
     }
 
+    public static void main(String[] args) {
+        BloomFilter<String> BF1 = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 1000, 0.001);
+        BloomFilter<String> BF2 = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 1000, 0.001);
+
+//        BF1.put("apple");
+        BF1.put("orange");
+        BF1.put("blue");
+
+        BF2.put("apple");
+        BF2.put("banana");
+        System.out.println(intersectCheck(BF2, BF1));
+    }
 }

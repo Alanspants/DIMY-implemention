@@ -14,12 +14,27 @@ public class TCPObjSend {
         socket.setReuseAddress(true);
 
         DataOutputStream dataOutputStream = new DataOutputStream(socket.getOutputStream());
+        DataInputStream dataInputStream = new DataInputStream(socket.getInputStream());
+        ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
+        ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
+
         dataOutputStream.writeUTF("QBF");
         dataOutputStream.flush();
 
-        ObjectOutputStream ObjOS = new ObjectOutputStream(socket.getOutputStream());
-        ObjOS.writeObject(qbf);
+        objectOutputStream.writeObject(qbf);
+        objectOutputStream.flush();
+
         System.out.println("\n------\nQBF send\nQBF:" + qbf + "\n------\n");
+
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(dataInputStream));
+        String msg = bufferedReader.readLine();
+//        System.out.println(msg);
+        if (msg.equals("true")) {
+            System.out.println("You are at risk of being in close contact with a patient");
+        } else {
+            System.out.println("You are safe");
+        }
+
         socket.close();
     }
 
@@ -32,7 +47,6 @@ public class TCPObjSend {
         ObjectOutputStream objectOutputStream = new ObjectOutputStream(socket.getOutputStream());
         ObjectInputStream objectInputStream = new ObjectInputStream(socket.getInputStream());
 
-
         dataOutputStream.writeUTF("CBF");
         dataOutputStream.flush();
 
@@ -43,7 +57,10 @@ public class TCPObjSend {
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(dataInputStream));
         String msg = bufferedReader.readLine();
-        System.out.println(msg);
+//        System.out.println(msg);
+        if (msg.equals("true")) {
+            System.out.println("Upload CBF successfully.");
+        }
 
         socket.close();
 
