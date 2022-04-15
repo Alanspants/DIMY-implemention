@@ -63,18 +63,15 @@ public class UDPReceive extends Thread {
                         getSecretShareByStr(shareArray[2]),
                 };
                 BigInteger recoverResult = Shamir.combine(secretShare, new BigInteger(prime));
-                System.out.println("----------------------");
-                System.out.println("recovering...");
+                System.out.println("Recovering...");
                 System.out.println("    [actual ephIDHash]: " + ephIDHash);
                 System.out.println("    [recover ephIDHash]: " + recoverResult.hashCode());
                 if (Integer.parseInt(ephIDHash) == recoverResult.hashCode()) {
                     System.out.println("    [recover result]: YES!!");
-                    System.out.println("----------------------");
                     recoverEphID = recoverResult;
                     return true;
                 } else {
                     System.out.println("    [recover result]: NO!!");
-                    System.out.println("----------------------");
                     return false;
                 }
             }
@@ -141,7 +138,7 @@ public class UDPReceive extends Thread {
                 // 通过比对DH msg中的hash值和自己pubKey的hash值，判断这条msg是不是发给自己的
                 if (myPubKey.equals(String.valueOf(ephID.getPubKey().hashCode()))) {
                     System.out.println("----------------------");
-                    System.out.println("Receiving... ");
+                    System.out.println("Diffle-Hellman receiving... ");
                     System.out.println("    [DH][content]: " + content);
                     try {
                         DH(new BigInteger(otherPubKey));

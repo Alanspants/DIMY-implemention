@@ -24,16 +24,17 @@ public class TCPObjSend {
         objectOutputStream.writeObject(qbf);
         objectOutputStream.flush();
 
-        System.out.println("\n------\nQBF send\nQBF:" + qbf + "\n------\n");
+        System.out.println("\n9 minutes have passed\n------\nQBF send\n[QBF]:" + qbf);
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(dataInputStream));
         String msg = bufferedReader.readLine();
 //        System.out.println(msg);
         if (msg.equals("true")) {
-            System.out.println("You are at risk of being in close contact with a patient");
+            System.out.println("[status]: You are at risk of being in close contact with a patient");
         } else {
-            System.out.println("You are safe");
+            System.out.println("[status]: You are safe");
         }
+        System.out.println("------");
 
         socket.close();
     }
@@ -53,14 +54,15 @@ public class TCPObjSend {
         objectOutputStream.writeObject(cbf);
         objectOutputStream.flush();
 
-        System.out.println("------\nCBF send\nCBF:" + cbf + "\n------");
+        System.out.println("------\nCBF send\n[CBF]:" + cbf);
 
         BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(dataInputStream));
         String msg = bufferedReader.readLine();
 //        System.out.println(msg);
         if (msg.equals("true")) {
-            System.out.println("Upload CBF successfully.");
+            System.out.println("[status]: Upload CBF successfully.");
         }
+        System.out.println("------");
 
         socket.close();
 

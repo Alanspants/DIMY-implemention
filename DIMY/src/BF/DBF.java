@@ -18,14 +18,22 @@ public class DBF extends Thread{
     }
 
     private void newDBF() {
-        System.out.println("****** new DBF generate ******");
-        System.out.println("****** current DBF is [DBF: " + DBFsIndex + "] ******");
+//        System.out.println("****** new DBF generate ******");
+//        System.out.println("****** current DBF is [DBF: " + DBFsIndex + "] ******");
+        System.out.println("\n*********************************");
+        System.out.println("90 seconds have passed");
+        System.out.println("Generate new DBF");
+        System.out.println("Current DBF: DBF[" + DBFsIndex + "]");
+        System.out.println("*********************************");
         BloomFilter<String> bloomFilter = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 1000, 0.001);
         DBFs[DBFsIndex] = bloomFilter;
     }
 
     public void insert(String str) {
-        System.out.println("****** insert into [DBF: " + DBFsIndex + "] ******");
+//        System.out.println("****** insert into [DBF: " + DBFsIndex + "] ******");
+        System.out.println("Updating DBF ...");
+        System.out.println("    [current DBF]: DBF[" + DBFsIndex + "]");
+        System.out.println("    [encID]: " + str);
         if (DBFs[DBFsIndex] != null) {
             DBFs[DBFsIndex].put(str);
         }

@@ -21,8 +21,8 @@ public class Dimy {
             public void run() {
                 try {
                     Thread.sleep(200);
-                    System.out.println("Diagnosed Positive !!!");
-                    System.out.println("CBF Uploading...");
+                    System.out.println("\nDiagnosed Positive !!!");
+                    System.out.println("CBF Creating and Uploading...");
                     //some cleaning up code...
                     TCPObjSend.sendCBF(dbf.newCBF());
 

@@ -40,7 +40,7 @@ public class TCPObjReceive extends Thread{
                 String msg = dataInputStream.readUTF();
                 if (msg.equals("QBF")) {
                     BloomFilter QBF = (BloomFilter) ObjIS.readObject();
-                    System.out.println("\n------\nQBF receive\nQBF:" + QBF + "\n------\n");
+                    System.out.println("\n------\nQBF receive\n[QBF]:" + QBF + "\n------");
 
                     BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "utf-8"));
                     if (Helper.Helper.intersectCheck(QBF, CBFs)) {
@@ -52,7 +52,7 @@ public class TCPObjReceive extends Thread{
                     socket.close();
                 } else if (msg.equals("CBF")) {
                     BloomFilter receiveBF = (BloomFilter) ObjIS.readObject();
-                    System.out.println("\n------\nCBF receive\nCBF:" + receiveBF + "\n------\n");
+                    System.out.println("\nSomebody is diagnosed positive\n------\nCBF receive\n[CBF]:" + receiveBF + "\n------");
                     CBFs.putAll(receiveBF);
 
                     BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "utf-8"));
