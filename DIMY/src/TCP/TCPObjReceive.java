@@ -17,7 +17,7 @@ public class TCPObjReceive extends Thread{
 
     public TCPObjReceive () {
 //        QBFs = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 1000, 0.001);
-        CBFs = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 1000, 0.001);
+        CBFs = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 100, 0.001);
     }
 
 //    public boolean closeContactCheck () {
@@ -43,6 +43,9 @@ public class TCPObjReceive extends Thread{
                     System.out.println("\n------\nQBF receive\n[QBF]:" + QBF + "\n------");
 
                     BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream(), "utf-8"));
+                    System.out.println("QBF-CBF matching...");
+                    System.out.println("    [QBF]: " + QBF);
+                    System.out.println("    [CBF]: " + CBFs);
                     if (Helper.Helper.intersectCheck(QBF, CBFs)) {
                         bufferedWriter.write("true");
                     } else {

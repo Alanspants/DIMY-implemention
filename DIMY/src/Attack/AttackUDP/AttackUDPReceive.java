@@ -21,7 +21,7 @@ public class AttackUDPReceive extends Thread{
             try {
                 ds = new DatagramSocket(null);
                 ds.setReuseAddress(true);
-                ds.bind(new InetSocketAddress(5001));
+                ds.bind(new InetSocketAddress(55001));
             } catch (SocketException e) {
                 e.printStackTrace();
             }

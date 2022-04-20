@@ -7,6 +7,7 @@ import Shamir.SecretShare;
 import Shamir.Shamir;
 
 import javax.crypto.KeyAgreement;
+import javax.xml.bind.SchemaOutputResolver;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.*;
@@ -43,11 +44,15 @@ public class UDPReceive extends Thread {
         if (!shares.containsKey(ephIDHash)){
             String[] shareArray = new String[]{share, "", ""};
             shares.put(ephIDHash, shareArray);
+            System.out.println("    [order]: 1");
         } else {
             String[] shareArray = shares.get(ephIDHash);
             if (!(shareArray[0].equals("") || shareArray[1].equals("") || shareArray[2].equals(""))) {
                 return false;
             }
+            if (shareArray[1].equals("")) System.out.println("    [order]: 2");
+            else if (shareArray[2].equals("")) System.out.println("    [order]: 3");
+            else System.out.println("    [order]: Already reconstruct, discard.");
             int i = 0;
             for(i = 0; i < 3; i++) {
                 if (shareArray[i].equals("")) {
@@ -64,8 +69,9 @@ public class UDPReceive extends Thread {
                 };
                 BigInteger recoverResult = Shamir.combine(secretShare, new BigInteger(prime));
                 System.out.println("Recovering...");
-                System.out.println("    [actual ephIDHash]: " + ephIDHash);
-                System.out.println("    [recover ephIDHash]: " + recoverResult.hashCode());
+                System.out.println("    [recover ephID]: " + recoverResult);
+                System.out.println("    [recover ephID Hash]: " + recoverResult.hashCode());
+                System.out.println("    [actual ephID Hash]: " + ephIDHash);
                 if (Integer.parseInt(ephIDHash) == recoverResult.hashCode()) {
                     System.out.println("    [recover result]: YES!!");
                     recoverEphID = recoverResult;
@@ -91,8 +97,9 @@ public class UDPReceive extends Thread {
 
         byte[] sharedSecret = ka.generateSecret();
         System.out.println("DHing...");
-        System.out.println("    [Share key]: " + printHexBinary(sharedSecret));
+        System.out.println("    [encID]: " + printHexBinary(sharedSecret));
         dbf.insert(printHexBinary(sharedSecret));
+        sharedSecret = null;
     }
 
     public void run() {

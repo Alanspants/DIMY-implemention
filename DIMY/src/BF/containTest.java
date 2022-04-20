@@ -33,8 +33,8 @@ public class containTest {
     }
 
     public static void main(String[] args) {
-        BloomFilter<String> BF1 = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 1000, 0.001);
-        BloomFilter<String> BF2 = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 1000, 0.001);
+        BloomFilter<String> BF1 = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 100, 0.001);
+        BloomFilter<String> BF2 = BloomFilter.create(Funnels.stringFunnel(Charsets.UTF_8), 100, 0.001);
 
 //        BF1.put("apple");
         BF1.put("orange");

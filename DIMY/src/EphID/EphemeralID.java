@@ -9,10 +9,8 @@ import java.io.IOException;
 import java.math.BigInteger;
 import java.net.InetAddress;
 import java.security.*;
-import java.util.Base64;
 import java.security.SecureRandom;
 
-import static javax.xml.bind.DatatypeConverter.printHexBinary;
 
 public class EphemeralID extends Thread {
     private BigInteger pubKey;
@@ -75,6 +73,9 @@ public class EphemeralID extends Thread {
 
         prime = new BigInteger(pubKey.bitLength() + 1, CERTAINTY, random);
         shares = Shamir.split(pubKey, 3, 5, prime, random);
+        for (int i = 0; i < 5; i++){
+            System.out.println("share " + shares[i].broadcastStr());
+        }
         System.out.println("----------------------\n");
     }
 

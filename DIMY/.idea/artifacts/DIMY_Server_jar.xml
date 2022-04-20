@@ -1,0 +1,9 @@
+<component name="ArtifactManager">
+  <artifact type="jar" name="DIMY_Server:jar">
+    <output-path>$PROJECT_DIR$/out/artifacts/DIMY_Server_jar</output-path>
+    <root id="archive" name="DIMY.jar">
+      <element id="module-output" name="DIMY" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/google/guava/guava/18.0/guava-18.0.jar" path-in-jar="/" />
+    </root>
+  </artifact>
+</component>
